@@ -24,13 +24,10 @@
       failed_when: false
       changed_when: false
       register: openwisp2_installed_freeradius_version
-    - name: Add FreeRADIUS 3.0.x repository to sources list
-      ansible.builtin.copy:
-        content: >
-          deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/packages.networkradius.com.asc]
-          http://packages.networkradius.com/freeradius-3.0/ubuntu/jammy focal main
-        dest: /etc/apt/sources.list.d/networkradius.list
-        mode: "0644"
+    - name: Remove obsolete FreeRADIUS 3.0.x repository
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/networkradius.list
+        state: absent
       when: openwisp2_installed_freeradius_version.stdout == '3.0'
     - name: Add FreeRADIUS 3.2.x repository to sources list
       ansible.builtin.copy:
