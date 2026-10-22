@@ -201,6 +201,28 @@
               - "'brotli_static on;' not in (nginx_disabled_site_config.content | b64decode)"
             fail_msg: "Nginx static compression directives should be disabled."
 
+    # Ensure the retired Jammy FreeRADIUS 3.0 source is not configured.
+    - name: Check legacy FreeRADIUS repository path
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list.d/networkradius.list
+      register: freeradius_repository_file
+
+    - name: Read configured FreeRADIUS repository
+      ansible.builtin.slurp:
+        src: /etc/apt/sources.list.d/networkradius.list
+      register: freeradius_repository
+      when: freeradius_repository_file.stat.exists
+
+    - name: Assert obsolete Jammy FreeRADIUS 3.0 source is absent
+      ansible.builtin.assert:
+        that:
+          - >-
+            not freeradius_repository_file.stat.exists or
+            'freeradius-3.0/ubuntu/jammy focal' not in
+            (freeradius_repository.content | default('') | b64decode)
+        fail_msg: >-
+          Obsolete Jammy FreeRADIUS 3.0 repository must not be configured.
+
     # Test openwisp2_nginx_trusted_proxies configuration.
     - name: Test nginx trusted proxies configuration
       block:
